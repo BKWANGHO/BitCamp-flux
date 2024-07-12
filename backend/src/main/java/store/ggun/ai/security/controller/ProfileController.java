@@ -6,10 +6,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 
 import reactor.core.publisher.Mono;
+import store.ggun.ai.common.domain.Messenger;
 import store.ggun.ai.security.domain.ProfileDTO;
 
 import java.util.stream.Collectors;
@@ -26,6 +28,13 @@ public class ProfileController {
                 .map(name -> name.substring("ROLE_".length()))
                 .collect(Collectors.toSet())
         ));
+    }
+
+    @GetMapping("/refresh")
+    Mono<Messenger> getRefresh(@RequestHeader("Authorization") String refreshToken) {
+
+
+        return Mono.empty();
     }
     
 }

@@ -13,7 +13,7 @@ export default function Header() {
 	return (
 		<>
 			<div className="bg-zinc-900 flex justify-between items-center fixed top-0 right-0 left-0 h-20 px-6">
-				<Link href="/">Company Logo</Link>
+				<Link href="/">KAZMI</Link>
 				<button
 					className="text-4xl text-white"
 					onClick={() => setShowSidebar(true)}

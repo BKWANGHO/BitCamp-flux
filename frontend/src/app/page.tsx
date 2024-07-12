@@ -1,9 +1,11 @@
 'use client';
 import { Link } from 'nextjs13-progress';
 import { useApp } from '@/contexts/AppContext';
+import { useState } from 'react';
 
 export default function Home() {
 	const { userData } = useApp();
+	// const [isLogined,setIsLogined] = useState(false)
 	return (
 		<div className="m-auto flex flex-col gap-6 text-center items-center">
 			{userData ? (

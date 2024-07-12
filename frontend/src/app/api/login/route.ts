@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 
 import { getJwtSecretKey } from '@/lib/server/auth';
@@ -6,7 +6,7 @@ import { getJwtSecretKey } from '@/lib/server/auth';
 import { UserData, UserDataPublic } from '@/types/UserData.type';
 
 export interface I_ApiUserLoginRequest {
-	username: string;
+	email: string;
 	password: string;
 }
 
@@ -20,105 +20,65 @@ export const dynamic = 'force-dynamic';
 
 
 
-export async function POST() {
-	console.log(`2- POST 진입성공`)
+export async function POST(request: NextRequest) {
+	console.log(`3 - POST 정보 : 진입 성공 `)
+	const body = (await request.json()) as I_ApiUserLoginRequest;
 
-	const res = await fetch('https://localhost:8080/api/login', {
+	// trim all values
+	const { email, password } = Object.fromEntries(
+		Object.entries(body).map(([key, value]) => [key, value.trim()]),
+	) as I_ApiUserLoginRequest;
+
+	if (!email || !password) {
+		const res: I_ApiUserLoginResponse = {
+			success: false,
+			message: 'Either login or password is missing',
+		};
+
+		return NextResponse.json(res, { status: 400 });
+	}
+
+	return await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/login`, {
 	  method: 'POST',
 	  headers: {
 		'Content-Type': 'application/json',
-		'API-Key': process.env.DATA_API_KEY!,
 	  },
-	  body: JSON.stringify({ time: new Date().toISOString() }),
+	//   body: JSON.stringify({ email, password }),
+	  body: JSON.stringify({ email , password }),
 	})
+	.then(async (res)=>{
+		return res.ok ?
+		res.json().then((json)=>{
+			console.log("확인확인"+JSON.stringify(json))
 
-	const data = await res.json()
-	console.log(`3- spring 다녀온 정보 : ${JSON.stringify(data)}`)
+			const response = NextResponse.json({ success: true, message: "SUCCESS" }, { status: 200 })
+			response.cookies.set({
+				name: 'userData',
+				value: JSON.stringify(json.data),
+				path: '/',
+				expires: new Date(Date.now() + 1000 * json.refreshTokenExpire),
+			})
+			response.cookies.set({
+				name: 'accessToken',
+				value: json.accessToken,
+				path: '/',
+				expires: new Date(Date.now() + 1000 * json.accessTokenExpire),
+			})
+			response.cookies.set({
+				name: 'refreshToken',
+				value: json.refreshToken,
+				path: '/',
+				expires: new Date(Date.now() + 1000 * json.refreshTokenExpire),
+			})
+			return response
 
-	return Response.json(data)
+		})
+		: NextResponse.json({success: false, message: (await res.json()).message}, {status: 401})
+	})
+	.catch(async (err) => {
+		return NextResponse.json({success: false, message: err}, {status: 400})
+	})
+   
+	
+
   }
-
-	// try {
-	// 	// Validate login and password
-	// 	try {
-	// 		if (!userData) {
-	// 			throw new Error('User not found');
-	// 		}
-	// 		if (userData.email !== login) {
-	// 			throw new Error('Invalid login');
-	// 		}
-	// 		if (userData.password !== password) {
-	// 			throw new Error('Invalid password');
-	// 		}
-	// 	} catch (error) {
-	// 		let mess = 'Something went wrong';
-	// 		if (error instanceof Error) {
-	// 			mess = error.message;
-	// 		}
-	// 		console.error(`Login failed: ${mess}`);
-	// 		return NextResponse.json(
-	// 			{
-	// 				success: false,
-	// 				message: 'Invalid login or password',
-	// 			},
-	// 			{ status: 401 },
-	// 		);
-	// 	}
-
-	// 	const token = await new SignJWT({
-	// 		id: userData.id,
-	// 		firstName: userData.firstName,
-	// 		lastName: userData.lastName,
-	// 		email: userData.email,
-	// 		phone: userData.phone,
-	// 		password: userData.password,
-	// 		role: userData.role,
-	// 	})
-	// 		.setProtectedHeader({ alg: 'HS256' })
-	// 		.setIssuedAt()
-	// 		.setExpirationTime(`${jwtExpires}s`)
-	// 		.sign(getJwtSecretKey());
-
-	// 	const res: I_ApiUserLoginResponse = {
-	// 		success: true,
-	// 		userData,
-	// 	};
-
-	// 	const response = NextResponse.json(res);
-
-	// 	// Set encoded token as cookie
-	// 	response.cookies.set({
-	// 		name: 'token',
-	// 		value: token,
-	// 		path: '/',
-	// 	});
-
-	// 	// Create public user data
-	// 	const userDataPublic: UserDataPublic = {
-	// 		id: userData.id,
-	// 		firstName: userData.firstName,
-	// 		lastName: userData.lastName,
-	// 		email: userData.email,
-	// 		phone: userData.phone,
-	// 		role: userData.role,
-	// 	};
-
-	// 	// Set public user data as cookie
-	// 	response.cookies.set({
-	// 		name: 'userData',
-	// 		value: JSON.stringify(userDataPublic),
-	// 		path: '/',
-	// 	});
-
-	// 	return response;
-	// } catch (error: any) {
-	// 	console.error(error);
-
-	// 	const res: I_ApiUserLoginResponse = {
-	// 		success: false,
-	// 		message: error.message || 'Something went wrong',
-	// 	};
-
-	// 	return NextResponse.json(res, { status: 500 });
-	// }
-// }

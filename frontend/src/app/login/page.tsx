@@ -34,13 +34,14 @@ export default function LoginPage() {
 				throw new Error('Please enter your credentials.');
 
 			const payload: I_ApiUserLoginRequest = {
-				username: loginRef.current?.value,
+				email: loginRef.current?.value,
 				password: passwordRef.current?.value,
 			};
 
-			console.log(`1- 페이로드 정보 : ${JSON.stringify(payload)}`)
+			console.log(`1 - 페이로드 정보 : ${JSON.stringify(payload)}`)
+			
 
-			const response = await fetch('/api/login', {
+			const response1 = await fetch('/api/login', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -48,30 +49,35 @@ export default function LoginPage() {
 				body: JSON.stringify(payload),
 			});
 
-			const data: I_ApiUserLoginResponse = await response.json();
-			console.log(`4- login route 다녀온 정보 : ${JSON.stringify(data)}`)
-
-			if (data.success) {
-				setLoginIsComplete(true);
-				if (redirect) {
-					window.location.replace(redirect);
-				} else {
-					window.location.replace('/dashboard');
+			
+	
+	
+	
+				const data: I_ApiUserLoginResponse = await response1.json();
+				console.log(`4 - login/route 에서 온 정보 :${JSON.stringify(data)} `)
+				// -------------------------------------------------------------
+	
+				// if (data.success) {
+				// 	setLoginIsComplete(true);
+				// 	if (redirect) {
+				// 		window.location.replace(redirect);
+				// 	} else {
+				// 		window.location.replace('/dashboard');
+				// 	}
+				// 	return;
+				// }
+	
+				throw new Error(data.message);
+			} catch (error) {
+				let mess = 'Something went wrong.';
+				if (error instanceof Error) {
+					mess = error.message;
 				}
-				return;
+				setError(mess);
+			} finally {
+				setIsLoading(false);
 			}
-
-			throw new Error(data.message);
-		} catch (error) {
-			let mess = 'Something went wrong.';
-			if (error instanceof Error) {
-				mess = error.message;
-			}
-			setError(mess);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+		};
 
 	return (
 		<div
@@ -91,7 +97,7 @@ export default function LoginPage() {
 							<span className="label-text">Login</span>
 						</label>
 						<input
-							defaultValue="john@example.com"
+							defaultValue="bkwangho@naver.com"
 							type="text"
 							ref={loginRef}
 							className="input input-bordered"
@@ -109,7 +115,7 @@ export default function LoginPage() {
 							<span className="label-text">Password</span>
 						</label>
 						<input
-							defaultValue="12345"
+							defaultValue="1234"
 							type="password"
 							ref={passwordRef}
 							className="input input-bordered"

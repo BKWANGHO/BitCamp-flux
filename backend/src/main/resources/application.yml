@@ -1,9 +1,14 @@
 spring:
+    main:
+        allow-bean-definition-overriding: true
+        web-application-type: reactive
     application:
         name: rootapp
     data:
         mongodb:
-            uri: mongodb://root:root@db-container:27017/ggundb
+            uri: mongodb://root:root@175.106.98.184:27017/ggundb?retryWrites=true&w=majority&authSource=admin
+            username: root
+            password: root
     sql:
         init:
             mode: always
@@ -14,3 +19,8 @@ logging:
             hibernate:
                 SQL: debug
                 type: trace
+jwt:
+    secret: 'ggunstoreKwangHoSooJinHyunJuMinJaeGgunStoreKwangHoSooJinHyunJuMinJae'
+    expiration:
+        access: 600
+        refresh: 1200
